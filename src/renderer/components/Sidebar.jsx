@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Icons } from './Icons';
 
 function Sidebar({
@@ -11,6 +11,13 @@ function Sidebar({
     onPresetSelect,
     onRefresh,
 }) {
+    const [showDonateModal, setShowDonateModal] = useState(false);
+    const walletAddress = '0x051BF9b67aC43BbB461A33E13c21218f304E31BB';
+
+    const copyAddress = () => {
+        navigator.clipboard.writeText(walletAddress);
+    };
+
     return (
         <aside className="sidebar">
             {/* Devices Section */}
@@ -139,20 +146,65 @@ function Sidebar({
                         minhvu2212
                     </a>
                 </div>
-                <div className="sidebar__donate">
-                    <span className="sidebar__donate-label">☕ Buy me a coffee</span>
-                    <code
-                        className="sidebar__donate-address"
-                        title="Click to copy"
-                        onClick={() => {
-                            navigator.clipboard.writeText('0x051BF9b67aC43BbB461A33E13c21218f304E31BB');
-                            alert('Wallet address copied!');
-                        }}
-                    >
-                        0x051B...31BB
-                    </code>
-                </div>
+                <button
+                    className="sidebar__donate-btn"
+                    onClick={() => setShowDonateModal(true)}
+                >
+                    ☕ Support this project
+                </button>
             </footer>
+
+            {/* Donate Modal */}
+            {showDonateModal && (
+                <div className="modal-overlay" onClick={() => setShowDonateModal(false)}>
+                    <div className="modal donate-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal__header">
+                            <h3 className="modal__title">☕ Support This Project</h3>
+                            <button className="modal__close" onClick={() => setShowDonateModal(false)}>
+                                <Icons.Close />
+                            </button>
+                        </div>
+                        <div className="modal__body">
+                            <p style={{ marginBottom: 'var(--spacing-md)', textAlign: 'center' }}>
+                                If you find this tool useful, consider buying me a coffee!
+                            </p>
+
+                            <div className="donate-section">
+                                <h4 className="donate-section__title">💰 Crypto (ETH/BNB/Polygon)</h4>
+                                <div className="donate-address-box">
+                                    <code className="donate-address-full">{walletAddress}</code>
+                                    <button
+                                        className="btn btn--sm btn--primary"
+                                        onClick={() => {
+                                            copyAddress();
+                                            alert('Wallet address copied!');
+                                        }}
+                                    >
+                                        Copy
+                                    </button>
+                                </div>
+                                <p className="donate-note">
+                                    Supports: Ethereum, BNB Chain, Polygon, Arbitrum, Base, and other EVM chains
+                                </p>
+                            </div>
+
+                            <div className="donate-section">
+                                <h4 className="donate-section__title">⭐ Other ways to support</h4>
+                                <ul className="donate-list">
+                                    <li>Star this project on GitHub</li>
+                                    <li>Share with friends who might need it</li>
+                                    <li>Report bugs and suggest features</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div className="modal__footer">
+                            <button className="btn btn--secondary" onClick={() => setShowDonateModal(false)}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </aside>
     );
 }

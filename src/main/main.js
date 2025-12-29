@@ -25,10 +25,18 @@ function createWindow() {
     // Load from Vite dev server or built files
     if (process.env.NODE_ENV !== 'production') {
         mainWindow.loadURL('http://localhost:5173');
-        mainWindow.webContents.openDevTools();
+        // Only open devtools in dev mode if needed
+        // mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'));
     }
+
+    // Disable F12/DevTools in production
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+        if (input.key === 'F12' || (input.control && input.shift && input.key === 'I')) {
+            event.preventDefault();
+        }
+    });
 
     mainWindow.on('closed', () => {
         mainWindow = null;

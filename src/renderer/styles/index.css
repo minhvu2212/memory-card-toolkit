@@ -216,7 +216,7 @@ body {
   border-bottom: var(--border-brutal);
 }
 
-.sidebar__section:last-child {
+.sidebar__section:last-of-type {
   border-bottom: none;
   flex: 1;
   overflow-y: auto;
@@ -1326,4 +1326,89 @@ body {
 .sidebar__donate-address:hover {
   background: var(--color-accent-primary);
   border-color: var(--color-accent-primary);
+}
+
+/* Sidebar Donate Button */
+.sidebar__donate-btn {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  background: var(--color-accent-yellow);
+  color: var(--color-text-primary);
+  border: var(--border-brutal);
+  box-shadow: var(--shadow-brutal-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.sidebar__donate-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal);
+  background: var(--color-accent-primary);
+  color: white;
+}
+
+.sidebar__donate-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #2d3436;
+}
+
+/* ============================================
+   Donate Modal
+============================================ */
+
+.donate-modal {
+  max-width: 480px;
+}
+
+.donate-section {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-bg-tertiary);
+  border: var(--border-brutal);
+}
+
+.donate-section__title {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  margin-bottom: var(--spacing-sm);
+}
+
+.donate-address-box {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.donate-address-full {
+  flex: 1;
+  padding: var(--spacing-sm);
+  font-size: 11px;
+  background: var(--color-text-primary);
+  color: white;
+  word-break: break-all;
+  border: var(--border-brutal);
+}
+
+.donate-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.donate-list {
+  margin: 0;
+  padding-left: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+}
+
+.donate-list li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.btn--sm {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
 }
