@@ -1,6 +1,9 @@
 # Funding
 # If you find this project useful, consider supporting its development:
 
-# Crypto wallet (ETH/BNB/Polygon/Arbitrum/Base)
+# Crypto wallet - same address works on all EVM chains!
+# Choose a network with low fees:
 custom:
-  - https://etherscan.io/address/0x051BF9b67aC43BbB461A33E13c21218f304E31BB
+  - https://bscscan.com/address/0x051BF9b67aC43BbB461A33E13c21218f304E31BB
+  - https://polygonscan.com/address/0x051BF9b67aC43BbB461A33E13c21218f304E31BB
+  - https://arbiscan.io/address/0x051BF9b67aC43BbB461A33E13c21218f304E31BB
