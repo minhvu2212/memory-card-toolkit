@@ -125,6 +125,34 @@ function Sidebar({
                     ))}
                 </div>
             </section>
+
+            {/* Footer - Author & Donate */}
+            <footer className="sidebar__footer">
+                <div className="sidebar__author">
+                    Made with ❤️ by{' '}
+                    <a
+                        href="https://github.com/minhvu2212"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="sidebar__link"
+                    >
+                        minhvu2212
+                    </a>
+                </div>
+                <div className="sidebar__donate">
+                    <span className="sidebar__donate-label">☕ Buy me a coffee</span>
+                    <code
+                        className="sidebar__donate-address"
+                        title="Click to copy"
+                        onClick={() => {
+                            navigator.clipboard.writeText('0x051BF9b67aC43BbB461A33E13c21218f304E31BB');
+                            alert('Wallet address copied!');
+                        }}
+                    >
+                        0x051B...31BB
+                    </code>
+                </div>
+            </footer>
         </aside>
     );
 }

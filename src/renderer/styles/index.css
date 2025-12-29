@@ -1274,3 +1274,56 @@ body {
   font-size: var(--font-size-xs);
   font-weight: 700;
 }
+
+/* ============================================
+   Sidebar Footer - Author & Donate
+============================================ */
+
+.sidebar__footer {
+  padding: var(--spacing-md);
+  border-top: var(--border-brutal);
+  background: var(--color-bg-tertiary);
+  text-align: center;
+}
+
+.sidebar__author {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.sidebar__link {
+  color: var(--color-accent-secondary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sidebar__link:hover {
+  text-decoration: underline;
+}
+
+.sidebar__donate {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar__donate-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.sidebar__donate-address {
+  font-size: 10px;
+  padding: 4px 8px;
+  background: var(--color-text-primary);
+  color: white;
+  cursor: pointer;
+  border: 2px solid var(--color-text-primary);
+  transition: all var(--transition-fast);
+}
+
+.sidebar__donate-address:hover {
+  background: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+}

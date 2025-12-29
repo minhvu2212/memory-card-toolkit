@@ -148,7 +148,7 @@ If you find this project helpful, consider supporting its development:
 
 - ⭐ Star this repository
 - 🐛 Report bugs and request features
-- 💰 Donate via crypto: `0x4b5755585572a271CFf3041CA8F7290de281D5bB`
+- 💰 Donate via crypto: `0x051BF9b67aC43BbB461A33E13c21218f304E31BB`
 
 ---
 
