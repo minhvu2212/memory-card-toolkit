@@ -1,0 +1,1276 @@
+/* ============================================
+   Memory Card Toolkit - Neo Brutalism Design
+   Bold colors, thick borders, hard shadows
+============================================ */
+
+:root {
+  /* Neo Brutalism Color Palette */
+  --color-bg-primary: #f5f0e8;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #e8e4dc;
+  --color-bg-card: #ffffff;
+  --color-bg-hover: #f0ebe3;
+
+  /* Accent Colors - Bold & Vibrant */
+  --color-accent-primary: #ff6b35;
+  --color-accent-secondary: #6c5ce7;
+  --color-accent-tertiary: #00b894;
+  --color-accent-yellow: #ffeaa7;
+  --color-accent-pink: #fd79a8;
+  --color-accent-blue: #74b9ff;
+
+  /* Status Colors */
+  --color-success: #00b894;
+  --color-warning: #fdcb6e;
+  --color-danger: #e17055;
+  --color-info: #74b9ff;
+
+  /* Text Colors */
+  --color-text-primary: #2d3436;
+  --color-text-secondary: #636e72;
+  --color-text-muted: #b2bec3;
+
+  /* Neo Brutalism Signature - Black borders & shadows */
+  --border-brutal: 3px solid #2d3436;
+  --border-brutal-thick: 4px solid #2d3436;
+  --shadow-brutal: 6px 6px 0px #2d3436;
+  --shadow-brutal-sm: 4px 4px 0px #2d3436;
+  --shadow-brutal-hover: 8px 8px 0px #2d3436;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* Border Radius - Mostly none for brutalism, slight for softer elements */
+  --radius-sm: 0px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-md: 15px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 36px;
+
+  /* Transitions */
+  --transition-fast: 100ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+/* ============================================
+   Reset & Base Styles
+============================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   App Layout
+============================================ */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--color-bg-primary);
+  background-image:
+    repeating-linear-gradient(0deg,
+      transparent,
+      transparent 50px,
+      rgba(0, 0, 0, 0.03) 50px,
+      rgba(0, 0, 0, 0.03) 51px),
+    repeating-linear-gradient(90deg,
+      transparent,
+      transparent 50px,
+      rgba(0, 0, 0, 0.03) 50px,
+      rgba(0, 0, 0, 0.03) 51px);
+}
+
+/* ============================================
+   Title Bar - Neo Brutalism
+============================================ */
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  padding: 0 var(--spacing-md);
+  background: var(--color-accent-yellow);
+  border-bottom: var(--border-brutal-thick);
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.titlebar__title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.titlebar__icon {
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-primary);
+}
+
+.titlebar__controls {
+  display: flex;
+  gap: var(--spacing-sm);
+  -webkit-app-region: no-drag;
+}
+
+.titlebar__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 32px;
+  border: var(--border-brutal);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-brutal-sm);
+}
+
+.titlebar__btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal);
+}
+
+.titlebar__btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #2d3436;
+}
+
+.titlebar__btn--close {
+  background: var(--color-danger);
+}
+
+.titlebar__btn--close:hover {
+  background: #d63031;
+}
+
+/* ============================================
+   Main Content
+============================================ */
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ============================================
+   Sidebar - Neo Brutalism
+============================================ */
+
+.sidebar {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-secondary);
+  border-right: var(--border-brutal-thick);
+}
+
+.sidebar__section {
+  padding: var(--spacing-lg);
+  border-bottom: var(--border-brutal);
+}
+
+.sidebar__section:last-child {
+  border-bottom: none;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.sidebar__title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sidebar__refresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: var(--border-brutal);
+  background: var(--color-accent-blue);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-brutal-sm);
+}
+
+.sidebar__refresh:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal);
+}
+
+.sidebar__refresh:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #2d3436;
+}
+
+.sidebar__refresh--spinning svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   Device List - Neo Brutalism
+============================================ */
+
+.device-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.device-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-bg-card);
+  border: var(--border-brutal);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-brutal-sm);
+}
+
+.device-item:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal);
+  background: var(--color-accent-yellow);
+}
+
+.device-item:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #2d3436;
+}
+
+.device-item--selected {
+  background: var(--color-accent-primary);
+  color: white;
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-brutal-hover);
+}
+
+.device-item--selected:hover {
+  background: var(--color-accent-primary);
+}
+
+.device-item__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--color-accent-secondary);
+  border: var(--border-brutal);
+  color: white;
+}
+
+.device-item--selected .device-item__icon {
+  background: white;
+  color: var(--color-text-primary);
+}
+
+.device-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.device-item__name {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.device-item__details {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+.device-item__badge {
+  padding: 2px 8px;
+  background: var(--color-text-primary);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.device-item__badge--warning {
+  background: var(--color-warning);
+  color: var(--color-text-primary);
+}
+
+.device-item__badge--danger {
+  background: var(--color-danger);
+  color: white;
+}
+
+.device-item--selected .device-item__badge {
+  background: white;
+  color: var(--color-text-primary);
+}
+
+/* ============================================
+   Preset List - Neo Brutalism
+============================================ */
+
+.preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.preset-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-card);
+  border: var(--border-brutal);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+  color: var(--color-text-primary);
+  box-shadow: 3px 3px 0px #2d3436;
+}
+
+.preset-item:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #2d3436;
+  background: var(--color-accent-pink);
+}
+
+.preset-item:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px #2d3436;
+}
+
+.preset-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.preset-item--selected {
+  background: var(--color-accent-secondary);
+  color: white;
+}
+
+.preset-item__icon {
+  font-size: 24px;
+}
+
+.preset-item__info {
+  flex: 1;
+}
+
+.preset-item__name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+
+.preset-item__desc {
+  font-size: var(--font-size-xs);
+  opacity: 0.8;
+}
+
+/* ============================================
+   Content Panel
+============================================ */
+
+.content-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-xl);
+  overflow-y: auto;
+  background: var(--color-bg-primary);
+}
+
+.content-panel--empty {
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 400px;
+  padding: var(--spacing-2xl);
+  background: var(--color-bg-card);
+  border: var(--border-brutal-thick);
+  box-shadow: var(--shadow-brutal);
+}
+
+.empty-state__icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-text-muted);
+}
+
+.empty-state__title {
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+}
+
+.empty-state__desc {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}
+
+/* ============================================
+   Device Details - Neo Brutalism
+============================================ */
+
+.device-details {
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.device-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: var(--color-accent-primary);
+  border: var(--border-brutal-thick);
+  box-shadow: var(--shadow-brutal);
+  color: white;
+}
+
+.device-header__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: white;
+  border: var(--border-brutal);
+  color: var(--color-text-primary);
+  flex-shrink: 0;
+}
+
+.device-header__info {
+  flex: 1;
+}
+
+.device-header__name {
+  font-size: var(--font-size-2xl);
+  font-weight: 900;
+  margin-bottom: var(--spacing-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.device-header__path {
+  font-size: var(--font-size-md);
+  font-family: monospace;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.device-header__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: white;
+  color: var(--color-text-primary);
+  border: var(--border-brutal);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  margin-top: var(--spacing-sm);
+  text-transform: uppercase;
+}
+
+.device-header__status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--color-success);
+  border: 2px solid var(--color-text-primary);
+}
+
+/* ============================================
+   Stats Cards - Neo Brutalism
+============================================ */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.stat-card {
+  padding: var(--spacing-lg);
+  background: var(--color-bg-card);
+  border: var(--border-brutal);
+  box-shadow: var(--shadow-brutal-sm);
+}
+
+.stat-card:nth-child(1) {
+  background: var(--color-accent-yellow);
+}
+
+.stat-card:nth-child(2) {
+  background: var(--color-accent-blue);
+}
+
+.stat-card:nth-child(3) {
+  background: var(--color-accent-pink);
+}
+
+.stat-card:nth-child(4) {
+  background: var(--color-accent-tertiary);
+  color: white;
+}
+
+.stat-card__label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--spacing-xs);
+  opacity: 0.8;
+}
+
+.stat-card__value {
+  font-size: var(--font-size-2xl);
+  font-weight: 900;
+}
+
+.stat-card__unit {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* Storage Bar - Neo Brutalism */
+.storage-bar {
+  margin-top: var(--spacing-md);
+}
+
+.storage-bar__track {
+  height: 16px;
+  background: white;
+  border: var(--border-brutal);
+  overflow: hidden;
+}
+
+.storage-bar__fill {
+  height: 100%;
+  background: repeating-linear-gradient(45deg,
+      var(--color-text-primary),
+      var(--color-text-primary) 4px,
+      transparent 4px,
+      transparent 8px);
+  transition: width var(--transition-slow);
+}
+
+.storage-bar__labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+/* ============================================
+   Action Buttons - Neo Brutalism
+============================================ */
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  background: var(--color-bg-card);
+  border: var(--border-brutal);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+  box-shadow: var(--shadow-brutal);
+}
+
+.action-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 10px 10px 0px #2d3436;
+  background: var(--color-accent-yellow);
+}
+
+.action-card:active {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0px #2d3436;
+}
+
+.action-card:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow-brutal);
+}
+
+.action-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: var(--color-accent-secondary);
+  border: var(--border-brutal);
+  color: white;
+}
+
+.action-card:hover .action-card__icon {
+  background: var(--color-accent-primary);
+}
+
+.action-card--danger .action-card__icon {
+  background: var(--color-danger);
+}
+
+.action-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.action-card__desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ============================================
+   Modal - Neo Brutalism
+============================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  width: 100%;
+  max-width: 520px;
+  background: var(--color-bg-secondary);
+  border: var(--border-brutal-thick);
+  box-shadow: 12px 12px 0px #2d3436;
+  animation: popIn 0.2s ease;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  background: var(--color-accent-yellow);
+  border-bottom: var(--border-brutal);
+}
+
+.modal__title {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: var(--border-brutal);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 3px 3px 0px #2d3436;
+}
+
+.modal__close:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #2d3436;
+  background: var(--color-danger);
+  color: white;
+}
+
+.modal__body {
+  padding: var(--spacing-lg);
+}
+
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-top: var(--border-brutal);
+  background: var(--color-bg-tertiary);
+}
+
+/* ============================================
+   Form Elements - Neo Brutalism
+============================================ */
+
+.form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border: var(--border-brutal);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  font-family: inherit;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  box-shadow: 3px 3px 0px #2d3436;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #2d3436;
+  background: var(--color-accent-yellow);
+}
+
+.form-input::placeholder {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232d3436' stroke-width='3'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 44px;
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  border: var(--border-brutal);
+  background: var(--color-bg-secondary);
+  box-shadow: 3px 3px 0px #2d3436;
+  transition: all var(--transition-fast);
+}
+
+.form-checkbox:hover {
+  background: var(--color-accent-blue);
+}
+
+.form-checkbox input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-accent-primary);
+  cursor: pointer;
+}
+
+.form-checkbox span {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* ============================================
+   Buttons - Neo Brutalism
+============================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: var(--border-brutal);
+  box-shadow: var(--shadow-brutal-sm);
+}
+
+.btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal);
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #2d3436;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn--primary {
+  background: var(--color-accent-primary);
+  color: white;
+}
+
+.btn--secondary {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.btn--danger {
+  background: var(--color-danger);
+  color: white;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-primary);
+  box-shadow: none;
+  border: none;
+}
+
+.btn--ghost:hover {
+  background: var(--color-bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+/* ============================================
+   Warning Box - Neo Brutalism
+============================================ */
+
+.warning-box {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-warning);
+  border: var(--border-brutal);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-brutal-sm);
+}
+
+.warning-box--danger {
+  background: var(--color-danger);
+  color: white;
+}
+
+.warning-box__icon {
+  color: var(--color-text-primary);
+  flex-shrink: 0;
+}
+
+.warning-box--danger .warning-box__icon {
+  color: white;
+}
+
+.warning-box__content {
+  flex: 1;
+}
+
+.warning-box__title {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-xs);
+}
+
+.warning-box__text {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+/* ============================================
+   Loading & Progress - Neo Brutalism
+============================================ */
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid var(--color-bg-tertiary);
+  border-top-color: var(--color-accent-primary);
+  animation: spin 0.6s linear infinite;
+}
+
+.progress-bar {
+  height: 16px;
+  background: var(--color-bg-secondary);
+  border: var(--border-brutal);
+  overflow: hidden;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  background: var(--color-accent-primary);
+  transition: width var(--transition-normal);
+}
+
+/* ============================================
+   Scrollbar - Neo Brutalism
+============================================ */
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-tertiary);
+  border-left: var(--border-brutal);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-primary);
+  border: 2px solid var(--color-bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-primary);
+}
+
+/* ============================================
+   Utility Classes
+============================================ */
+
+.text-center {
+  text-align: center;
+}
+
+.text-success {
+  color: var(--color-success);
+}
+
+.text-warning {
+  color: var(--color-text-primary);
+}
+
+.text-danger {
+  color: var(--color-danger);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+/* ============================================
+   Warning Box Variants
+============================================ */
+
+.warning-box--warning {
+  background: var(--color-warning);
+  border: var(--border-brutal);
+}
+
+.warning-box--warning .warning-box__icon {
+  color: var(--color-text-primary);
+}
+
+/* Status dot warning */
+.device-header__status-dot--warning {
+  background: var(--color-warning);
+}
+
+/* Action card primary variant */
+.action-card--primary {
+  background: var(--color-accent-primary);
+  color: white;
+}
+
+.action-card--primary .action-card__icon {
+  background: white;
+  color: var(--color-text-primary);
+}
+
+.action-card--primary:hover {
+  background: #e55a2b;
+}
+
+/* ============================================
+   Letter Grid (Assign Letter Modal)
+============================================ */
+
+.letter-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.letter-btn {
+  padding: var(--spacing-md);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  background: var(--color-bg-card);
+  border: var(--border-brutal);
+  box-shadow: var(--shadow-brutal-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.letter-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal);
+  background: var(--color-accent-yellow);
+}
+
+.letter-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #2d3436;
+}
+
+/* ============================================
+   Initialize Options (Initialize Modal)
+============================================ */
+
+.init-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.init-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--spacing-lg);
+  background: var(--color-bg-card);
+  border: var(--border-brutal);
+  box-shadow: var(--shadow-brutal-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.init-option:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal);
+  background: var(--color-accent-yellow);
+}
+
+.init-option:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #2d3436;
+}
+
+.init-option strong {
+  font-size: var(--font-size-lg);
+}
+
+.init-option__desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+/* ============================================
+   Partitions Section
+============================================ */
+
+.partitions-section {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: var(--color-bg-card);
+  border: var(--border-brutal);
+  box-shadow: var(--shadow-brutal-sm);
+}
+
+.partitions-section__title {
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--spacing-md);
+}
+
+.partitions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.partition-item {
+  padding: var(--spacing-md);
+  background: var(--color-bg-tertiary);
+  border: var(--border-brutal);
+}
+
+.partition-item__info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.partition-item__number {
+  font-weight: 800;
+  color: var(--color-accent-secondary);
+}
+
+.partition-item__size {
+  font-weight: 700;
+}
+
+.partition-item__type {
+  padding: 2px 8px;
+  background: var(--color-text-primary);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.partition-item__letter {
+  padding: 2px 8px;
+  background: var(--color-success);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
