@@ -23,12 +23,17 @@ function createWindow() {
     });
 
     // Load from Vite dev server or built files
-    if (process.env.NODE_ENV !== 'production') {
+    // Use app.isPackaged to detect if running from built app
+    if (!app.isPackaged) {
         mainWindow.loadURL('http://localhost:5173');
         // Only open devtools in dev mode if needed
         // mainWindow.webContents.openDevTools();
     } else {
-        mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'));
+        // In packaged app, dist is unpacked outside asar
+        // app.getAppPath() returns path to app.asar, replace with app.asar.unpacked
+        const appPath = app.getAppPath().replace('app.asar', 'app.asar.unpacked');
+        const indexPath = path.join(appPath, 'dist', 'index.html');
+        mainWindow.loadFile(indexPath);
     }
 
     // Disable F12/DevTools in production

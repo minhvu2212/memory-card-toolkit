@@ -1,0 +1,2 @@
+select volume D
+format fs=ntfs label=NewDrive quick

@@ -36,6 +36,13 @@
     "directories": {
       "output": "dist-electron"
     },
+    "files": [
+      "dist/**/*",
+      "src/main/**/*"
+    ],
+    "asarUnpack": [
+      "dist/**/*"
+    ],
     "win": {
       "target": "nsis",
       "icon": "public/icons/icon.ico",
