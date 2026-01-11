@@ -169,10 +169,6 @@ ipcMain.handle('disk:canExtend', async (event, driveLetter) => {
     return await diskService.canExtend(driveLetter);
 });
 
-ipcMain.handle('disk:deletePartition', async (event, { diskNumber, partitionNumber }) => {
-    return await diskService.deletePartition(diskNumber, partitionNumber);
-});
-
 ipcMain.handle('disk:getPartitionInfo', async (event, { diskNumber, partitionNumber }) => {
     return await diskService.getPartitionInfo(diskNumber, partitionNumber);
 });

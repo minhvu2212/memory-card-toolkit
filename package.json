@@ -1,6 +1,6 @@
 {
   "name": "memory-card-toolkit",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Desktop application for memory card configuration, formatting, and partitioning",
   "main": "src/main/main.js",
   "scripts": {
