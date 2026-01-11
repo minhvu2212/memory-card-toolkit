@@ -143,3 +143,36 @@ ipcMain.handle('disk:clean', async (event, diskNumber) => {
 ipcMain.handle('disk:getAvailableLetters', async () => {
     return await diskService.getAvailableDriveLetters();
 });
+
+// Disk Extend/Shrink Features
+ipcMain.handle('disk:getAllIncludingInternal', async () => {
+    return await diskService.getAllDisksIncludingInternal();
+});
+
+ipcMain.handle('disk:getDiskLayout', async (event, diskNumber) => {
+    return await diskService.getDiskLayout(diskNumber);
+});
+
+ipcMain.handle('disk:extendVolume', async (event, { driveLetter, sizeInMB }) => {
+    return await diskService.extendVolume(driveLetter, sizeInMB);
+});
+
+ipcMain.handle('disk:shrinkVolume', async (event, { driveLetter, sizeInMB }) => {
+    return await diskService.shrinkVolume(driveLetter, sizeInMB);
+});
+
+ipcMain.handle('disk:getResizeLimits', async (event, driveLetter) => {
+    return await diskService.getResizeLimits(driveLetter);
+});
+
+ipcMain.handle('disk:canExtend', async (event, driveLetter) => {
+    return await diskService.canExtend(driveLetter);
+});
+
+ipcMain.handle('disk:deletePartition', async (event, { diskNumber, partitionNumber }) => {
+    return await diskService.deletePartition(diskNumber, partitionNumber);
+});
+
+ipcMain.handle('disk:getPartitionInfo', async (event, { diskNumber, partitionNumber }) => {
+    return await diskService.getPartitionInfo(diskNumber, partitionNumber);
+});

@@ -10,6 +10,8 @@ function DeviceDetails({
     onApplyPreset,
     onAssignLetter,
     onInitialize,
+    onExtend,
+    onShrink,
 }) {
     if (!device) {
         return (
@@ -183,23 +185,23 @@ function DeviceDetails({
                             </div>
                         </button>
 
-                        <button className="action-card" disabled>
+                        <button className="action-card" onClick={onExtend}>
                             <div className="action-card__icon">
-                                <Icons.Backup />
+                                <Icons.Expand />
                             </div>
-                            <div className="action-card__title">Backup</div>
+                            <div className="action-card__title">Extend</div>
                             <div className="action-card__desc">
-                                Create an image backup of the drive
+                                Extend volume into unallocated space
                             </div>
                         </button>
 
-                        <button className="action-card" disabled>
+                        <button className="action-card" onClick={onShrink}>
                             <div className="action-card__icon">
-                                <Icons.Health />
+                                <Icons.Shrink />
                             </div>
-                            <div className="action-card__title">Health Check</div>
+                            <div className="action-card__title">Shrink</div>
                             <div className="action-card__desc">
-                                Scan for errors and bad sectors
+                                Shrink volume to create free space
                             </div>
                         </button>
                     </div>

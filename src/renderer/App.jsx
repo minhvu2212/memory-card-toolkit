@@ -3,6 +3,9 @@ import TitleBar from './components/TitleBar';
 import Sidebar from './components/Sidebar';
 import DeviceDetails from './components/DeviceDetails';
 import FormatModal from './components/FormatModal';
+import ExtendModal from './components/ExtendModal';
+import ShrinkModal from './components/ShrinkModal';
+import DeletePartitionModal from './components/DeletePartitionModal';
 import { devicePresets } from './data/presets';
 
 function App() {
@@ -12,13 +15,15 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
     const [modalState, setModalState] = useState({ type: null, isOpen: false, data: null });
     const [deviceInfo, setDeviceInfo] = useState(null);
+    const [showAllDisks, setShowAllDisks] = useState(true); // Show all disks by default
 
-    // Fetch all removable devices
+    // Fetch devices (all or removable only)
     const fetchDevices = useCallback(async () => {
         setIsLoading(true);
         try {
             if (window.electronAPI) {
-                const disks = await window.electronAPI.disk.getAll();
+                // Always fetch all disks including internal
+                const disks = await window.electronAPI.disk.getAllIncludingInternal();
                 setDevices(disks);
             } else {
                 // Mock data for development in browser
@@ -139,6 +144,21 @@ function App() {
         setModalState({ type: 'initialize', isOpen: true, data: null });
     };
 
+    // Open extend modal
+    const openExtendModal = () => {
+        setModalState({ type: 'extend', isOpen: true, data: null });
+    };
+
+    // Open shrink modal
+    const openShrinkModal = () => {
+        setModalState({ type: 'shrink', isOpen: true, data: null });
+    };
+
+    // Open delete partition modal
+    const openDeleteModal = (partition) => {
+        setModalState({ type: 'delete', isOpen: true, data: partition });
+    };
+
     // Close modal
     const closeModal = () => {
         setModalState({ type: null, isOpen: false, data: null });
@@ -228,6 +248,7 @@ function App() {
                     onDeviceSelect={handleDeviceSelect}
                     onPresetSelect={handlePresetSelect}
                     onRefresh={fetchDevices}
+                    onDeletePartition={openDeleteModal}
                 />
 
                 <DeviceDetails
@@ -239,6 +260,8 @@ function App() {
                     onApplyPreset={applyPreset}
                     onAssignLetter={openAssignLetterModal}
                     onInitialize={openInitializeModal}
+                    onExtend={openExtendModal}
+                    onShrink={openShrinkModal}
                 />
             </div>
 
@@ -251,6 +274,22 @@ function App() {
                     onComplete={handleFormatComplete}
                 />
             )}
+
+            {/* Extend Modal */}
+            <ExtendModal
+                isOpen={modalState.isOpen && modalState.type === 'extend'}
+                device={selectedDevice}
+                onClose={closeModal}
+                onExtend={handleFormatComplete}
+            />
+
+            {/* Shrink Modal */}
+            <ShrinkModal
+                isOpen={modalState.isOpen && modalState.type === 'shrink'}
+                device={selectedDevice}
+                onClose={closeModal}
+                onShrink={handleFormatComplete}
+            />
 
             {/* Assign Letter Modal */}
             {modalState.isOpen && modalState.type === 'assignLetter' && (
@@ -310,6 +349,17 @@ function App() {
                     </div>
                 </div>
             )}
+
+            {/* Delete Partition Modal */}
+            <DeletePartitionModal
+                isOpen={modalState.isOpen && modalState.type === 'delete'}
+                onClose={closeModal}
+                partition={modalState.data}
+                onDelete={async () => {
+                    closeModal();
+                    await fetchDevices();
+                }}
+            />
         </div>
     );
 }

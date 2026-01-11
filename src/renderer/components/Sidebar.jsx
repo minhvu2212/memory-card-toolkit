@@ -10,6 +10,7 @@ function Sidebar({
     onDeviceSelect,
     onPresetSelect,
     onRefresh,
+    onDeletePartition,
 }) {
     const [showDonateModal, setShowDonateModal] = useState(false);
     const walletAddress = '0x051BF9b67aC43BbB461A33E13c21218f304E31BB';
@@ -24,8 +25,8 @@ function Sidebar({
             <section className="sidebar__section">
                 <div className="sidebar__header">
                     <h2 className="sidebar__title">
-                        <Icons.UsbDrive />
-                        Devices
+                        <Icons.HardDrive />
+                        All Disks
                     </h2>
                     <button
                         className={`sidebar__refresh ${isLoading ? 'sidebar__refresh--spinning' : ''}`}
@@ -46,59 +47,166 @@ function Sidebar({
                             <div className="device-item__info">
                                 <div className="device-item__name">No devices found</div>
                                 <div className="device-item__details">
-                                    Connect a USB drive or SD card
+                                    Connect a USB drive or wait for scan
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        devices.map((device, index) => {
-                            const key = device.driveLetter || `disk-${device.diskNumber}` || index;
-                            const isSelected = selectedDevice?.driveLetter === device.driveLetter &&
-                                selectedDevice?.diskNumber === device.diskNumber;
-
-                            return (
-                                <button
-                                    key={key}
-                                    className={`device-item ${isSelected ? 'device-item--selected' : ''}`}
-                                    onClick={() => onDeviceSelect(device)}
+                        devices.flatMap((device, diskIndex) => {
+                            // Show disk header
+                            const diskHeader = (
+                                <div
+                                    key={`disk-header-${device.diskNumber}`}
+                                    className="disk-header"
                                 >
-                                    <div className="device-item__icon">
-                                        <Icons.MemoryCard />
-                                    </div>
-                                    <div className="device-item__info">
-                                        <div className="device-item__name">
-                                            {device.label || 'USB Disk'}
-                                        </div>
-                                        <div className="device-item__details">
-                                            {device.driveLetter ? (
-                                                <>
-                                                    <span>{device.driveLetter}</span>
-                                                    <span>•</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <span>Disk {device.diskNumber}</span>
-                                                    <span>•</span>
-                                                </>
-                                            )}
-                                            <span>{device.size} GB</span>
-                                            {device.hasLetter === false && (
-                                                <span className="device-item__badge device-item__badge--warning">
-                                                    NO LETTER
-                                                </span>
-                                            )}
-                                            {device.hasLetter !== false && device.fileSystem && (
-                                                <span className="device-item__badge">{device.fileSystem}</span>
-                                            )}
-                                            {device.status === 'Offline' && (
-                                                <span className="device-item__badge device-item__badge--danger">
-                                                    OFFLINE
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </button>
+                                    <Icons.HardDrive />
+                                    <span>Disk {device.diskNumber}: {device.name} ({device.size} GB)</span>
+                                </div>
                             );
+
+                            // Show each partition and unallocated space from layout
+                            const layoutItems = (device.layout?.items || []).map((item, itemIndex) => {
+                                const key = `disk-${device.diskNumber}-${item.type}-${itemIndex}`;
+                                const isSelected = selectedDevice?.diskNumber === device.diskNumber &&
+                                    selectedDevice?.partitionNumber === item.partitionNumber &&
+                                    selectedDevice?.type === item.type;
+
+                                if (item.type === 'unallocated') {
+                                    // Unallocated space entry
+                                    return (
+                                        <button
+                                            key={key}
+                                            className={`device-item device-item--unallocated ${isSelected ? 'device-item--selected' : ''}`}
+                                            onClick={() => onDeviceSelect({
+                                                ...device,
+                                                type: 'unallocated',
+                                                offset: item.offset,
+                                                sizeGB: item.sizeGB
+                                            })}
+                                        >
+                                            <div className="device-item__icon device-item__icon--unallocated">
+                                                <Icons.Partition />
+                                            </div>
+                                            <div className="device-item__info">
+                                                <div className="device-item__name">Unallocated</div>
+                                                <div className="device-item__details">
+                                                    <span>{item.sizeGB} GB</span>
+                                                    <span>•</span>
+                                                    <span className="device-item__unallocated">Free space</span>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    );
+                                } else {
+                                    // Partition entry
+                                    const isSystemPartition = item.partitionType === 'System' ||
+                                        item.partitionType === 'Reserved' ||
+                                        item.partitionType === 'Recovery' ||
+                                        (item.partitionType && item.partitionType.includes('EFI'));
+
+                                    const isProtectedDrive = item.driveLetter === 'C:';
+                                    const canDelete = !isProtectedDrive && onDeletePartition;
+
+                                    if (isSystemPartition && !item.driveLetter) {
+                                        // Show system partitions but allow delete for non-EFI
+                                        const displayType = item.partitionType || 'Unknown';
+                                        const isEFI = displayType.includes('EFI') || displayType.includes('System');
+
+                                        return (
+                                            <div
+                                                key={key}
+                                                className={`device-item device-item--system ${isSelected ? 'device-item--selected' : ''}`}
+                                            >
+                                                <div className="device-item__icon device-item__icon--system">
+                                                    <Icons.Settings />
+                                                </div>
+                                                <div className="device-item__info">
+                                                    <div className="device-item__name">{displayType}</div>
+                                                    <div className="device-item__details">
+                                                        <span>{item.sizeGB} GB</span>
+                                                        <span>•</span>
+                                                        <span>Partition {item.partitionNumber}</span>
+                                                    </div>
+                                                </div>
+                                                {!isEFI && onDeletePartition && (
+                                                    <button
+                                                        className="device-item__delete"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onDeletePartition({
+                                                                diskNumber: device.diskNumber,
+                                                                partitionNumber: item.partitionNumber,
+                                                                partitionType: item.partitionType,
+                                                                sizeGB: item.sizeGB,
+                                                            });
+                                                        }}
+                                                        title="Delete partition"
+                                                    >
+                                                        <Icons.Close />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    }
+
+                                    const displayName = item.driveLetter
+                                        ? (item.label || `Local Disk (${item.driveLetter})`)
+                                        : `Partition ${item.partitionNumber}`;
+
+                                    return (
+                                        <div
+                                            key={key}
+                                            className={`device-item ${isSelected ? 'device-item--selected' : ''}`}
+                                        >
+                                            <button
+                                                className="device-item__main"
+                                                onClick={() => onDeviceSelect({
+                                                    ...device,
+                                                    type: 'partition',
+                                                    driveLetter: item.driveLetter,
+                                                    partitionNumber: item.partitionNumber,
+                                                    label: item.label,
+                                                    sizeGB: item.sizeGB,
+                                                    fileSystem: item.fileSystem,
+                                                })}
+                                            >
+                                                <div className="device-item__icon">
+                                                    <Icons.HardDrive />
+                                                </div>
+                                                <div className="device-item__info">
+                                                    <div className="device-item__name">{displayName}</div>
+                                                    <div className="device-item__details">
+                                                        {item.driveLetter && <><span>{item.driveLetter}</span><span>•</span></>}
+                                                        <span>{item.sizeGB} GB</span>
+                                                        {item.fileSystem && <><span>•</span><span>{item.fileSystem}</span></>}
+                                                    </div>
+                                                </div>
+                                            </button>
+                                            {canDelete && (
+                                                <button
+                                                    className="device-item__delete"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onDeletePartition({
+                                                            diskNumber: device.diskNumber,
+                                                            partitionNumber: item.partitionNumber,
+                                                            driveLetter: item.driveLetter,
+                                                            partitionType: item.partitionType,
+                                                            sizeGB: item.sizeGB,
+                                                            label: item.label,
+                                                        });
+                                                    }}
+                                                    title="Delete partition"
+                                                >
+                                                    <Icons.Close />
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                }
+                            }).filter(Boolean);
+
+                            return [diskHeader, ...layoutItems];
                         })
                     )}
                 </div>
@@ -114,22 +222,24 @@ function Sidebar({
                 </div>
 
                 <div className="preset-list">
-                    {presets.map((preset) => (
-                        <button
-                            key={preset.id}
-                            className={`preset-item ${selectedPreset?.id === preset.id ? 'preset-item--selected' : ''
-                                }`}
-                            onClick={() => onPresetSelect(preset)}
-                            disabled={!selectedDevice}
-                            title={!selectedDevice ? 'Select a device first' : preset.notes}
-                        >
-                            <div className="preset-item__info">
-                                <div className="preset-item__name">{preset.name}</div>
-                                <div className="preset-item__desc">{preset.description}</div>
-                            </div>
-                            <Icons.ChevronRight />
-                        </button>
-                    ))}
+                    {presets.map((preset) => {
+                        const isSelected = selectedPreset?.id === preset.id;
+                        return (
+                            <button
+                                key={preset.id}
+                                className={`preset-item ${isSelected ? 'preset-item--selected' : ''}`}
+                                onClick={() => onPresetSelect(preset)}
+                            >
+                                <div className="preset-item__info">
+                                    <div className="preset-item__name">{preset.name}</div>
+                                    <div className="preset-item__details">
+                                        {preset.fileSystem} • {preset.label}
+                                    </div>
+                                </div>
+                                <Icons.ChevronRight />
+                            </button>
+                        );
+                    })}
                 </div>
             </section>
 

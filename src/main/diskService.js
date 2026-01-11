@@ -523,6 +523,469 @@ clean
             return ['D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'];
         }
     }
+
+    // ============================================
+    // DISK EXTEND/SHRINK FEATURES
+    // ============================================
+
+    // Get ALL physical disks including internal drives (not just USB)
+    async getAllDisksIncludingInternal() {
+        try {
+            // Use Get-PhysicalDisk to get ALL physical disks (Get-Disk sometimes misses disks)
+            const physDiskCmd = `powershell -Command "Get-PhysicalDisk | Select-Object DeviceId, FriendlyName, Size, MediaType, OperationalStatus, BusType | ConvertTo-Json"`;
+            const { stdout: physOut } = await execAsync(physDiskCmd);
+
+            if (!physOut.trim()) {
+                return [];
+            }
+
+            let physDisks = JSON.parse(physOut);
+            if (!Array.isArray(physDisks)) {
+                physDisks = [physDisks];
+            }
+
+            // For each physical disk, try to get disk info and partitions
+            const result = await Promise.all(physDisks.map(async (phys) => {
+                const diskNumber = parseInt(phys.DeviceId) || 0;
+
+                // Try Get-Disk for this disk number
+                let diskInfo = null;
+                try {
+                    const diskCmd = `powershell -Command "Get-Disk -Number ${diskNumber} -ErrorAction SilentlyContinue | Select-Object Number, Size, PartitionStyle, OperationalStatus, HealthStatus, BusType | ConvertTo-Json"`;
+                    const { stdout: diskOut } = await execAsync(diskCmd);
+                    if (diskOut.trim()) {
+                        diskInfo = JSON.parse(diskOut);
+                    }
+                } catch (e) {
+                    console.log(`Get-Disk failed for disk ${diskNumber}, using PhysicalDisk info`);
+                }
+
+                // Get disk layout (partitions and unallocated space)
+                const layout = await this.getDiskLayout(diskNumber);
+                console.log(`[AllDisks] Disk ${diskNumber} layout: ${layout.items?.length || 0} items, hasUnallocated: ${layout.hasUnallocated}`);
+
+                return {
+                    diskNumber: diskNumber,
+                    name: phys.FriendlyName || 'Disk',
+                    size: phys.Size ? Math.round(phys.Size / (1024 * 1024 * 1024) * 100) / 100 : 0,
+                    sizeBytes: phys.Size || 0,
+                    partitionStyle: diskInfo?.PartitionStyle || 'Unknown',
+                    status: diskInfo?.OperationalStatus || phys.OperationalStatus || 'Unknown',
+                    health: diskInfo?.HealthStatus || 'Unknown',
+                    busType: diskInfo?.BusType || phys.BusType || 'Unknown',
+                    mediaType: phys.MediaType || 'Unknown',
+                    isRemovable: (diskInfo?.BusType || phys.BusType) === 'USB',
+                    isInternal: (diskInfo?.BusType || phys.BusType) !== 'USB',
+                    layout: layout,
+                };
+            }));
+
+            return result;
+        } catch (error) {
+            console.error('Error getting all disks:', error);
+            return [];
+        }
+    }
+
+    // Get disk layout showing partitions and unallocated space
+    async getDiskLayout(diskNumber) {
+        try {
+            console.log(`[Layout] Getting layout for disk ${diskNumber}`);
+
+            // Get all partitions using Get-Partition (wrap in try-catch - may fail for some disks)
+            let partOut = '';
+            try {
+                const partCmd = `powershell -Command "Get-Partition -DiskNumber ${diskNumber} -ErrorAction SilentlyContinue | Select-Object PartitionNumber, DriveLetter, Size, Offset, Type | ConvertTo-Json"`;
+                const result = await execAsync(partCmd);
+                partOut = result.stdout || '';
+            } catch (e) {
+                console.log(`[Layout] Get-Partition failed for disk ${diskNumber}, will try WMI fallback`);
+                partOut = '';
+            }
+
+            // Get disk total size (try Get-Disk first, then PhysicalDisk)
+            let diskSize = 0;
+            try {
+                const diskCmd = `powershell -Command "(Get-Disk -Number ${diskNumber} -ErrorAction SilentlyContinue).Size"`;
+                const { stdout: diskOut } = await execAsync(diskCmd);
+                diskSize = parseInt(diskOut.trim()) || 0;
+            } catch (e) {
+                // Fallback to Get-PhysicalDisk
+                try {
+                    const physCmd = `powershell -Command "(Get-PhysicalDisk | Where-Object DeviceId -eq ${diskNumber}).Size"`;
+                    const { stdout: physOut } = await execAsync(physCmd);
+                    diskSize = parseInt(physOut.trim()) || 0;
+                } catch (e2) {
+                    console.log(`[Layout] Failed to get disk size for disk ${diskNumber}`);
+                }
+            }
+            console.log(`[Layout] Disk ${diskNumber} size: ${diskSize}`);
+
+            let partitions = [];
+            if (partOut.trim()) {
+                partitions = JSON.parse(partOut);
+                if (!Array.isArray(partitions)) {
+                    partitions = [partitions];
+                }
+            }
+            console.log(`[Layout] Get-Partition found ${partitions.length} partitions`);
+
+            // If no partitions found, try WMI approach for disks not managed by Storage Spaces
+            if (partitions.length === 0) {
+                console.log(`[Layout] Trying WMI fallback for disk ${diskNumber}`);
+                try {
+                    // Use WMI to find partitions on this disk (use raw property names)
+                    const wmiCmd = `powershell -Command "Get-WmiObject Win32_DiskPartition | Where-Object DiskIndex -eq ${diskNumber} | Select-Object Index, Size, StartingOffset, Type, DeviceID | ConvertTo-Json"`;
+                    const { stdout: wmiOut } = await execAsync(wmiCmd);
+                    console.log(`[Layout] WMI output: ${wmiOut.substring(0, 200)}...`);
+
+                    if (wmiOut.trim()) {
+                        let wmiParts = JSON.parse(wmiOut);
+                        if (!Array.isArray(wmiParts)) {
+                            wmiParts = [wmiParts];
+                        }
+
+                        // Map raw WMI property names to expected format
+                        wmiParts = wmiParts.map(p => ({
+                            PartitionNumber: (p.Index || 0) + 1,
+                            Size: p.Size,
+                            Offset: p.StartingOffset,
+                            Type: p.Type,
+                            DeviceID: p.DeviceID,
+                            DriveLetter: null
+                        }));
+
+                        // Get all logical disk mappings
+                        try {
+                            const mapCmd = `powershell -Command "Get-WmiObject Win32_LogicalDiskToPartition | Select-Object Antecedent, Dependent | ConvertTo-Json"`;
+                            const { stdout: mapOut } = await execAsync(mapCmd);
+                            if (mapOut.trim()) {
+                                let mappings = JSON.parse(mapOut);
+                                if (!Array.isArray(mappings)) mappings = [mappings];
+
+                                // Match drive letters to partitions
+                                for (const part of wmiParts) {
+                                    for (const map of mappings) {
+                                        if (map.Antecedent && part.DeviceID && map.Antecedent.includes(part.DeviceID)) {
+                                            // Extract drive letter from Dependent
+                                            const match = map.Dependent.match(/DeviceID="([A-Z]):"/i);
+                                            if (match) {
+                                                part.DriveLetter = match[1];
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (e) { }
+
+                        partitions = wmiParts;
+                    }
+                } catch (wmiError) {
+                    console.log('WMI fallback failed:', wmiError.message);
+                }
+            }
+
+            // Build layout with partitions and gaps (unallocated space)
+            const layout = [];
+            let currentOffset = 0;
+
+            // Sort by offset
+            partitions.sort((a, b) => (a.Offset || 0) - (b.Offset || 0));
+
+            for (const part of partitions) {
+                const partOffset = parseInt(part.Offset) || 0;
+                const partSize = parseInt(part.Size) || 0;
+
+                // Check for unallocated space before this partition
+                if (partOffset > currentOffset) {
+                    const gapSize = partOffset - currentOffset;
+                    if (gapSize > 1048576) { // > 1MB
+                        layout.push({
+                            type: 'unallocated',
+                            offset: currentOffset,
+                            size: gapSize,
+                            sizeGB: Math.round(gapSize / (1024 * 1024 * 1024) * 100) / 100,
+                        });
+                    }
+                }
+
+                // Get volume info if has drive letter
+                let volumeInfo = null;
+                const driveLetter = part.DriveLetter;
+                if (driveLetter && driveLetter !== '\u0000' && driveLetter !== '') {
+                    try {
+                        const volCmd = `powershell -Command "Get-Volume -DriveLetter ${driveLetter} -ErrorAction SilentlyContinue | Select-Object FileSystemLabel, FileSystem, SizeRemaining | ConvertTo-Json"`;
+                        const { stdout: volOut } = await execAsync(volCmd);
+                        if (volOut.trim()) {
+                            volumeInfo = JSON.parse(volOut);
+                        }
+                    } catch (e) { }
+                }
+
+                layout.push({
+                    type: 'partition',
+                    partitionNumber: part.PartitionNumber,
+                    driveLetter: (driveLetter && driveLetter !== '\u0000' && driveLetter !== '') ? `${driveLetter}:` : null,
+                    offset: partOffset,
+                    size: partSize,
+                    sizeGB: Math.round(partSize / (1024 * 1024 * 1024) * 100) / 100,
+                    partitionType: part.Type,
+                    label: volumeInfo?.FileSystemLabel || '',
+                    fileSystem: volumeInfo?.FileSystem || '',
+                    freeSpace: volumeInfo?.SizeRemaining || 0,
+                });
+
+                currentOffset = partOffset + partSize;
+            }
+
+            // Check for unallocated space at the end
+            if (diskSize > currentOffset) {
+                const gapSize = diskSize - currentOffset;
+                if (gapSize > 1048576) { // > 1MB
+                    layout.push({
+                        type: 'unallocated',
+                        offset: currentOffset,
+                        size: gapSize,
+                        sizeGB: Math.round(gapSize / (1024 * 1024 * 1024) * 100) / 100,
+                    });
+                }
+            }
+
+            return {
+                diskNumber,
+                diskSize,
+                diskSizeGB: Math.round(diskSize / (1024 * 1024 * 1024) * 100) / 100,
+                items: layout,
+                hasUnallocated: layout.some(item => item.type === 'unallocated'),
+                totalUnallocated: layout.filter(item => item.type === 'unallocated').reduce((sum, item) => sum + item.size, 0),
+            };
+        } catch (error) {
+            console.error('Error getting disk layout:', error);
+            return { diskNumber, items: [], hasUnallocated: false };
+        }
+    }
+
+    // Extend volume into adjacent unallocated space
+    async extendVolume(driveLetter, sizeInMB = null) {
+        try {
+            const drive = driveLetter.replace(':', '');
+
+            if (this.isProtected(drive)) {
+                throw new Error('Cannot extend protected drive!');
+            }
+
+            let command;
+            if (sizeInMB) {
+                // Extend by specific size
+                command = `powershell -Command "Resize-Partition -DriveLetter ${drive} -Size ((Get-PartitionSupportedSize -DriveLetter ${drive}).SizeMin + ${sizeInMB}MB)"`;
+            } else {
+                // Extend to max available
+                command = `powershell -Command "$maxSize = (Get-PartitionSupportedSize -DriveLetter ${drive}).SizeMax; Resize-Partition -DriveLetter ${drive} -Size $maxSize"`;
+            }
+
+            await execAsync(command);
+            return { success: true, message: `Volume ${drive}: extended successfully` };
+        } catch (error) {
+            throw new Error(`Failed to extend volume: ${error.message}`);
+        }
+    }
+
+    // Shrink volume to create unallocated space
+    async shrinkVolume(driveLetter, sizeInMB) {
+        try {
+            const drive = driveLetter.replace(':', '');
+
+            if (this.isProtected(drive)) {
+                throw new Error('Cannot shrink protected drive!');
+            }
+
+            // Get current size and shrink
+            const command = `powershell -Command "$currentSize = (Get-Partition -DriveLetter ${drive}).Size; $newSize = $currentSize - (${sizeInMB}MB); Resize-Partition -DriveLetter ${drive} -Size $newSize"`;
+
+            await execAsync(command);
+            return { success: true, message: `Volume ${drive}: shrunk by ${sizeInMB}MB successfully` };
+        } catch (error) {
+            throw new Error(`Failed to shrink volume: ${error.message}`);
+        }
+    }
+
+    // Get supported resize sizes for a volume
+    async getResizeLimits(driveLetter) {
+        try {
+            const drive = driveLetter.replace(':', '');
+            const command = `powershell -Command "Get-PartitionSupportedSize -DriveLetter ${drive} | Select-Object SizeMin, SizeMax | ConvertTo-Json"`;
+
+            const { stdout } = await execAsync(command);
+
+            if (!stdout.trim()) {
+                throw new Error('Could not get resize limits');
+            }
+
+            const result = JSON.parse(stdout);
+            return {
+                minSize: result.SizeMin || 0,
+                maxSize: result.SizeMax || 0,
+                minSizeGB: Math.round((result.SizeMin || 0) / (1024 * 1024 * 1024) * 100) / 100,
+                maxSizeGB: Math.round((result.SizeMax || 0) / (1024 * 1024 * 1024) * 100) / 100,
+            };
+        } catch (error) {
+            console.error('Error getting resize limits:', error);
+            return { minSize: 0, maxSize: 0, minSizeGB: 0, maxSizeGB: 0 };
+        }
+    }
+
+    // Check if volume can be extended
+    async canExtend(driveLetter) {
+        try {
+            const drive = driveLetter.replace(':', '');
+
+            // Get disk number for this volume
+            const diskNumCmd = `powershell -Command "(Get-Partition -DriveLetter ${drive}).DiskNumber"`;
+            const { stdout: diskOut } = await execAsync(diskNumCmd);
+            const diskNumber = parseInt(diskOut.trim());
+
+            // Get layout and check for adjacent unallocated
+            const layout = await this.getDiskLayout(diskNumber);
+
+            // Find this partition
+            const partIndex = layout.items.findIndex(item =>
+                item.type === 'partition' && item.driveLetter === `${drive}:`
+            );
+
+            if (partIndex === -1) return { canExtend: false, reason: 'Partition not found' };
+
+            // Check if next item is unallocated
+            const nextItem = layout.items[partIndex + 1];
+            if (nextItem && nextItem.type === 'unallocated') {
+                return {
+                    canExtend: true,
+                    availableSpace: nextItem.size,
+                    availableSpaceGB: nextItem.sizeGB,
+                };
+            }
+
+            return { canExtend: false, reason: 'No adjacent unallocated space' };
+        } catch (error) {
+            return { canExtend: false, reason: error.message };
+        }
+    }
+
+    // Delete a partition (DANGEROUS - use with caution)
+    async deletePartition(diskNumber, partitionNumber) {
+        try {
+            console.log(`[Delete] Attempting to delete partition ${partitionNumber} on disk ${diskNumber}`);
+
+            // Get partition info first
+            const infoCmd = `powershell -Command "Get-Partition -DiskNumber ${diskNumber} -PartitionNumber ${partitionNumber} -ErrorAction Stop | Select-Object DriveLetter, Type, Size | ConvertTo-Json"`;
+            let partInfo;
+            try {
+                const { stdout } = await execAsync(infoCmd);
+                partInfo = JSON.parse(stdout);
+            } catch (e) {
+                // Try WMI fallback
+                const wmiCmd = `powershell -Command "Get-WmiObject Win32_DiskPartition | Where-Object { $_.DiskIndex -eq ${diskNumber} -and $_.Index -eq ${partitionNumber - 1} } | Select-Object Type, Size | ConvertTo-Json"`;
+                const { stdout: wmiOut } = await execAsync(wmiCmd);
+                partInfo = wmiOut.trim() ? JSON.parse(wmiOut) : null;
+            }
+
+            // Check for protected partitions
+            if (partInfo) {
+                const protectedTypes = ['System', 'Reserved', 'EFI'];
+                const partType = partInfo.Type || '';
+                if (protectedTypes.some(t => partType.includes(t))) {
+                    throw new Error(`Cannot delete ${partType} partition - system protected!`);
+                }
+
+                // Check for protected drive letters
+                const driveLetter = partInfo.DriveLetter;
+                if (driveLetter && this.isProtected(driveLetter)) {
+                    throw new Error(`Cannot delete protected drive ${driveLetter}!`);
+                }
+            }
+
+            // Execute deletion using diskpart (more reliable for dynamic disks)
+            const diskpartScript = `
+select disk ${diskNumber}
+select partition ${partitionNumber}
+delete partition override
+`;
+            // Write script to temp file
+            const tempFile = path.join(process.env.TEMP || 'C:\\Temp', `diskpart_delete_${Date.now()}.txt`);
+            const fs = require('fs');
+            fs.writeFileSync(tempFile, diskpartScript);
+
+            try {
+                const deleteCmd = `diskpart /s "${tempFile}"`;
+                const { stdout, stderr } = await execAsync(deleteCmd);
+                console.log('[Delete] Diskpart output:', stdout);
+
+                // Cleanup temp file
+                fs.unlinkSync(tempFile);
+
+                if (stderr && stderr.includes('error')) {
+                    throw new Error(stderr);
+                }
+
+                return {
+                    success: true,
+                    message: `Partition ${partitionNumber} deleted successfully from disk ${diskNumber}`,
+                };
+            } catch (diskpartError) {
+                // Cleanup temp file on error
+                try { fs.unlinkSync(tempFile); } catch (e) { }
+                throw diskpartError;
+            }
+        } catch (error) {
+            console.error('[Delete] Error:', error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    }
+
+    // Get partition info for confirmation dialog
+    async getPartitionInfo(diskNumber, partitionNumber) {
+        try {
+            // Try Get-Partition first
+            const cmd = `powershell -Command "Get-Partition -DiskNumber ${diskNumber} -PartitionNumber ${partitionNumber} -ErrorAction SilentlyContinue | Select-Object DriveLetter, Size, Type | ConvertTo-Json"`;
+            const { stdout } = await execAsync(cmd);
+
+            if (stdout.trim()) {
+                const info = JSON.parse(stdout);
+                return {
+                    diskNumber,
+                    partitionNumber,
+                    driveLetter: info.DriveLetter || null,
+                    size: info.Size || 0,
+                    sizeGB: Math.round((info.Size || 0) / (1024 * 1024 * 1024) * 100) / 100,
+                    type: info.Type || 'Unknown',
+                };
+            }
+
+            // Fallback to WMI
+            const wmiCmd = `powershell -Command "Get-WmiObject Win32_DiskPartition | Where-Object { $_.DiskIndex -eq ${diskNumber} -and $_.Index -eq ${partitionNumber - 1} } | Select-Object Size, Type | ConvertTo-Json"`;
+            const { stdout: wmiOut } = await execAsync(wmiCmd);
+
+            if (wmiOut.trim()) {
+                const info = JSON.parse(wmiOut);
+                return {
+                    diskNumber,
+                    partitionNumber,
+                    driveLetter: null,
+                    size: info.Size || 0,
+                    sizeGB: Math.round((info.Size || 0) / (1024 * 1024 * 1024) * 100) / 100,
+                    type: info.Type || 'Unknown',
+                };
+            }
+
+            return null;
+        } catch (error) {
+            console.error('Error getting partition info:', error);
+            return null;
+        }
+    }
 }
 
 module.exports = { DiskService };
+

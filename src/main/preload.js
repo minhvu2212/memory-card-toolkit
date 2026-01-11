@@ -35,6 +35,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
         setReadWrite: (diskNumber) => ipcRenderer.invoke('disk:setReadWrite', diskNumber),
         initialize: (options) => ipcRenderer.invoke('disk:initialize', options),
         clean: (diskNumber) => ipcRenderer.invoke('disk:clean', diskNumber),
+
+        // Disk extend/shrink features
+        getAllIncludingInternal: () => ipcRenderer.invoke('disk:getAllIncludingInternal'),
+        getDiskLayout: (diskNumber) => ipcRenderer.invoke('disk:getDiskLayout', diskNumber),
+        extendVolume: (options) => ipcRenderer.invoke('disk:extendVolume', options),
+        shrinkVolume: (options) => ipcRenderer.invoke('disk:shrinkVolume', options),
+        getResizeLimits: (driveLetter) => ipcRenderer.invoke('disk:getResizeLimits', driveLetter),
+        canExtend: (driveLetter) => ipcRenderer.invoke('disk:canExtend', driveLetter),
+        deletePartition: (options) => ipcRenderer.invoke('disk:deletePartition', options),
+        getPartitionInfo: (options) => ipcRenderer.invoke('disk:getPartitionInfo', options),
     },
 
     // Event listeners
