@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Electron](https://img.shields.io/badge/Electron-28.3.3-47848F?logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://reactjs.org/)
-[![Platform](https://img.shields.io/badge/Platform-Windows-blue)](https://github.com/minhvu2212/memory-card-toolkit/releases)
+[![Platform](https://img.shields.io/badge/Platform-Windows-blue)](https://github.com/tang-vu/memory-card-toolkit/releases)
 
 [Download](#installation) • [Features](#features) • [Screenshots](#screenshots) • [Contributing](#contributing)
 
@@ -62,13 +62,13 @@ Pre-configured settings for popular devices:
 ## 🚀 Installation
 
 ### Download
-Download the latest installer from [Releases](https://github.com/minhvu2212/memory-card-toolkit/releases).
+Download the latest installer from [Releases](https://github.com/tang-vu/memory-card-toolkit/releases).
 
 ### Build from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/minhvu2212/memory-card-toolkit.git
+git clone https://github.com/tang-vu/memory-card-toolkit.git
 cd memory-card-toolkit
 
 # Install dependencies
@@ -154,6 +154,6 @@ If you find this project helpful, consider supporting its development:
 
 <div align="center">
 
-**Made with ❤️ by [minhvu2212](https://github.com/minhvu2212)**
+**Made with ❤️ by [tang-vu](https://github.com/tang-vu)**
 
 </div>

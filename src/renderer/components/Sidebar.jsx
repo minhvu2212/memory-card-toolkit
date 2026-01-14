@@ -248,12 +248,12 @@ function Sidebar({
                 <div className="sidebar__author">
                     Made with ❤️ by{' '}
                     <a
-                        href="https://github.com/minhvu2212"
+                        href="https://github.com/tang-vu"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="sidebar__link"
                     >
-                        minhvu2212
+                        tang-vu
                     </a>
                 </div>
                 <button
